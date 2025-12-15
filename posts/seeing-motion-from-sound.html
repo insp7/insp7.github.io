@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Seeing Motion from Sound with Event Cameras</title>
+
+  <!-- Base site CSS -->
+  <link rel="stylesheet" href="../stylesheet.css" />
+
+  <!-- Page-specific polish (light theme only) -->
+  <style>
+    :root{
+      --text: #1f2328;
+      --muted: #666;
+      --border: #e6e6e6;
+      --bg-soft: #fafafa;
+      --callout-bg: #f7f7f7;
+      --callout-border: #9a9a9a;
+    }
+
+    body {
+      background: #ffffff;
+      color: var(--text);
+      /* High-quality, widely-available reading stack */
+      font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-kerning: normal;
+      margin: 0;
+    }
+
+    .post {
+      max-width: 760px; /* narrower = easier long-form reading */
+      margin: 0 auto;
+      padding: 34px 18px 72px;
+    }
+
+    /* Top navigation */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 22px;
+      font-size: 14px;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--muted);
+    }
+
+    .topbar a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .topbar a:hover {
+      text-decoration: underline;
+    }
+
+    /* Title */
+    h1 {
+        font-size: 36px;
+        line-height: 1.2;
+        margin: 12px 0 16px;
+        letter-spacing: -0.01em;
+        font-weight: 400;
+    }
+    .meta {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 26px;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      margin: 0 6px 6px 0;
+      background: var(--bg-soft);
+    }
+
+    /* Main typography */
+    p, li {
+        font-size: 18px;
+        line-height: 1.65;   /* tighter, blog-perfect */
+        margin: 0 0 12px;
+    }
+
+    p {
+      max-width: 70ch; /* keeps paragraphs comfortable */
+    }
+
+    b, strong { font-weight: 650; }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    a:hover {
+      text-decoration-thickness: 2px;
+    }
+
+    h2 {
+        margin: 32px 0 10px;
+        font-size: 21px;
+        letter-spacing: -0.005em;
+        line-height: 1.3;
+        font-weight: 500;
+    }
+
+    /* Cards */
+    .card {
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 12px 0 18px;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    .card ul {
+      margin: 6px 0 0 18px;
+      padding: 0;
+    }
+
+    .card li {
+      font-size: 16px; /* slightly smaller inside card looks nicer */
+      line-height: 1.65;
+      margin: 6px 0;
+    }
+
+    /* Media blocks */
+    .media {
+      margin: 26px 0 30px;
+      text-align: center;
+    }
+
+    .media video {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .caption {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 10px;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    /* GIF comparison */
+    .compare {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin: 22px 0 28px;
+    }
+
+    .compare .pane {
+      flex: 1;
+      min-width: 260px;
+      text-align: center;
+    }
+
+    .compare img {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      display: block;
+    }
+
+    /* Callout */
+    .callout {
+      border-left: 4px solid var(--callout-border);
+      background: var(--callout-bg);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 22px 0 26px;
+    }
+
+    .callout b {
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    /* Keep refs + acknowledgments smaller (as requested) */
+    .smalltext,
+    .smalltext li {
+      font-size: 15px;
+      line-height: 1.65;
+      max-width: 78ch;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      padding-top: 18px;
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+  </style>
+</head>
+
+<body>
+  <main class="post">
+    <!-- <div class="topbar">
+      <a href="../index.html">← Home</a>
+      <span>Blog / Notes</span>
+    </div> -->
+
+    <h1>Seeing Motion from Sound with Event Cameras</h1>
+
+    <div class="meta">
+      <span class="tag">December 2025</span>
+      <span class="tag">Event Cameras</span>
+    </div>
+
+    <p>
+      Sound causes objects to vibrate, and while these vibrations are typically
+      invisible to the naked eye, they can be observed visually under appropriate
+      sensing conditions. Prior work has shown that the motion of an object’s
+      surface is closely related to the underlying sound pressure, making it possible
+      to infer audio from visual measurements alone
+      <sup><a href="#ref-visual-microphone">[1]</a></sup>.
+      This idea has enabled non-contact sound recovery in applications such as
+      visual microphones, optical vibration sensing, surveillance, and the analysis
+      of material and structural properties, especially in settings where placing
+      microphones is difficult or undesirable
+      <sup>
+        <a href="#ref-chen">[2]</a>,
+        <a href="#ref-sheinini">[3]</a>
+      </sup>.
+    </p>
+
+
+    <!-- INTRODUCTION -->
+    <p>
+      Event cameras operate differently from conventional cameras. Instead of
+      recording images at fixed frame rates, each pixel independently reports
+      changes in brightness as they occur. This asynchronous sensing makes event
+      cameras extremely sensitive to fast and subtle motion, while producing very
+      little data when the scene is static.
+    </p>
+
+    <p>
+      As a result, event cameras can reveal physical phenomena—such as
+      micro-scale vibrations—that are invisible to standard video and even to
+      the human eye. In this post, I describe a simple observation: <b>although the
+      object appears stationary to the naked eye, sound-induced vibrations produce
+      apparent motion that becomes visible in the event stream.</b>
+    </p>
+
+    <!-- Setup -->
+    <h2>Experiment Setup</h2>
+
+    <div class="card">
+      <ul>
+        <li><b>Camera:</b> Prophesee EVK4 HD</li>
+        <li><b>Object:</b> Chips packet</li>
+        <li><b>Illumination:</b> Single fixed light source</li>
+        <li><b>Sound:</b> External speaker placed close to the object</li>
+      </ul>
+    </div>
+
+    <p>
+      The object is illuminated by a single fixed light source. 
+      The camera observes the object, while sound is played by a speaker outside the camera's field of view.
+      The object appears visually static. Measures were taken to minimize sound propagation through the table, 
+      including the use of acoustic isolation foam. 
+      Below is the event stream visualization of a chips packet with sound playing.
+    </p>
+
+    <!-- VIDEO -->
+    <div class="media">
+    <iframe
+      src="https://drive.google.com/file/d/1qWr4rxel5R_I0zqYNT_RzyhDsu0AeAfh/preview"
+      width="100%"
+      height="480"
+      allow="autoplay"
+      style="border:none; border-radius:14px;">
+    </iframe>
+</div>
+
+
+    <!-- OBSERVATION -->
+    <h2>Observation</h2>
+
+    <p>
+      When sound is playing, the event stream exhibits clear, structured activity
+      that is absent when no sound is present. This activity is caused by
+      sound-induced micro-vibrations of the object, which introduce subtle
+      temporal changes in brightness that trigger events.
+    </p>
+
+    <p>
+      When no sound is playing, the event stream is sparse and dominated by
+      background noise. The contrast between these two conditions is immediately
+      visible in the raw event data.
+    </p>
+
+    <!-- GIF COMPARISON -->
+    <div class="compare">
+      <div class="pane">
+        <img src="../gif/sound.gif" alt="Raw event stream with sound">
+        <p class="caption">Raw event stream <b>with sound</b></p>
+      </div>
+
+      <div class="pane">
+        <img src="../gif/no_sound.gif" alt="Raw event stream without sound">
+        <p class="caption">Raw event stream <b>without sound</b></p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>Key takeaway:</b><br>
+      Since event cameras can capture tiny, rapid brightness changes, 
+      sound becomes visible in the form of motion as it physically vibrates objects.
+    </div>
+    
+    <h2>Next Steps</h2>
+    <p>
+        Ongoing work focuses on investigating methods for extracting sound-related information
+        present in these event streams.
+    </p>
+
+    <!-- ACKNOWLEDGMENTS -->
+    <h2>Acknowledgments</h2>
+
+    <p class="smalltext">
+      Thank you to Prof. Robert Pless for his guidance and for providing this opportunity
+      and access to the event camera used in these experiments. I also thank Alper
+      Cetinkaya for the helpful discussions during this work.
+    </p>
+
+<h2>References</h2>
+
+<ol class="smalltext">
+  <li id="ref-visual-microphone">
+    Abe Davis, Michael Rubinstein, Neal Wadhwa, Gautham J. Mysore,
+    Fredo Durand, and William T. Freeman.
+    <i>The Visual Microphone: Passive Recovery of Sound from Video</i>.
+    ACM Transactions on Graphics (SIGGRAPH), 2014.
+  </li>
+
+  <li id="ref-chen">
+    Justin G. Chen, Neal Wadhwa, Young-Jin Cha, Fredo Durand,
+    William T. Freeman, and Oral Buyukozturk.
+    <i>Structural Modal Identification Through High-Speed Camera Video:
+    Motion Magnification</i>.
+    Topics in Modal Analysis I, Springer, 2014.
+  </li>
+
+  <li id="ref-sheinini">
+    Mark Sheinin, Dorian Chan, Matthew O’Toole, and Srinivasa G. Narasimhan.
+    <i>Dual-Shutter Optical Vibration Sensing</i>.
+    IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022.
+  </li>
+</ol>
+
+    <div class="footer">
+      <a href="../index.html">← Back to homepage</a>
+    </div>
+  </main>
+</body>
+</html>
