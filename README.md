@@ -1,1 +1,3 @@
-Thank you to Jon Barron for this awesome profile template: https://jonbarron.info/
+# Modified Homepage
+
+This website builds upon the academic webpage template by Jon Barron (https://jonbarron.info) and incorporates design elements from al-folio (https://github.com/alshedivat/al-folio). I’ve adapted and extended the template for my own use by making additional structural and visual customizations. Feel free to this template for your own purposes.
